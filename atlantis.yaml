@@ -1,0 +1,57 @@
+version: 3
+automerge: true
+delete_source_branch_on_merge: true
+projects:
+- name: default
+  dir: .
+  workspace: default
+  terraform_version: v1.5.0
+  autoplan:
+    when_modified: ["**/*.tf", "**/*.tfvars", "**/*.tfvars.json"]
+    enabled: true
+  apply_requirements: ["approved", "mergeable"]
+  workflow: default
+
+- name: all-subdirectories
+  dir: "*"
+  workspace: default
+  terraform_version: v1.5.0
+  autoplan:
+    when_modified: ["**/*.tf", "**/*.tfvars", "**/*.tfvars.json", "**/*.yml", "**/*.yaml"]
+    enabled: true
+  apply_requirements: ["approved", "mergeable"]
+  workflow: default
+
+workflows:
+  default:
+    plan:
+      steps:
+      - init
+      - plan
+    apply:
+      steps:
+      - apply
+
+# Global settings for watching all resources
+parallel_plan: true
+parallel_apply: true
+
+# Enable detailed logging for all operations
+log_level: debug
+
+# Watch for changes in all file types that could affect infrastructure
+allowed_regexp_prefixes:
+- .*
+
+# Enable auto planning for all changes
+repo_config_json: |
+  {
+    "repos": [
+      {
+        "id": "/.*/", 
+        "allowed_overrides": ["workflow", "apply_requirements"],
+        "allow_custom_workflows": true,
+        "delete_source_branch_on_merge": true
+      }
+    ]
+  }
